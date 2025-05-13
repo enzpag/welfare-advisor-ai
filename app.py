@@ -1,7 +1,9 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-from openai import OpenAI         # client v0.28+
+import time
+from openai import OpenAI
+from openai.error import RateLimitError
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -84,7 +86,7 @@ if submitted:
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # — Prompt e chiamata con gestione errori
+    # — Prompt e chiamata con retry/back-off in caso di RateLimitError
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -96,20 +98,28 @@ Elenca per ciascun incentivo:
 Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 """
     with st.spinner("Generazione consulenza avanzata…"):
-        try:
-            resp = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "Sei un consulente fiscale professionale."},
-                    {"role": "user",   "content": prompt}
-                ],
-                temperature=0.2,
-                max_tokens=400
-            )
-            consulenza = resp.choices[0].message.content
-        except Exception as e:
-            st.error(f"❌ Errore nella generazione AI: {type(e).__name__}. Riprova tra qualche secondo.")
+        resp = None
+        for attempt in range(3):
+            try:
+                resp = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "Sei un consulente fiscale professionale."},
+                        {"role": "user",   "content": prompt}
+                    ],
+                    temperature=0.2,
+                    max_tokens=400
+                )
+                break
+            except RateLimitError:
+                wait = 2 ** attempt
+                time.sleep(wait)
+
+        if resp is None:
+            st.error("❌ Troppe richieste in breve, riprova tra qualche minuto.")
             st.stop()
+
+        consulenza = resp.choices[0].message.content
 
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
@@ -128,7 +138,6 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
 
-    st.success("Consulenza salvata in output_consulenza_ai.json")
 
 
 
