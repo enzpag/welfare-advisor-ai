@@ -45,6 +45,9 @@ with st.form("dati_completi"):
 
 # ─────────────────────────────────────────────────────────────────────────────
 if submitted:
+    st.write(">> DEBUG secrets:", st.secrets)
+st.stop()
+
     # — Benefit operativi
     dip       = Dipendente(
         nome=nome_dip, età=età, ruolo=ruolo_dip,
