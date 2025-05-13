@@ -1,36 +1,39 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-from openai import OpenAI                  # ← import del client OpenAI
+from openai import OpenAI
 from main import Dipendente, suggest_benefits
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Configurazione pagina
 st.set_page_config(page_title="Welfare Advisor AI", layout="centered")
 st.title("🌱 Welfare Advisor AI")
 
-# — 1️⃣ Inizializzo il client OpenAI (v0.28+)
-client = OpenAI(api_key=st.secrets["openai_api_key"])
+# ─────────────────────────────────────────────────────────────────────────────
+# 1️⃣ Inizializzo il client OpenAI (v0.28+), legge da secrets.toml [openai]
+client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
-# — 2️⃣ Carico la Knowledge-Base degli incentivi
+# 2️⃣ Carico la Knowledge-Base degli incentivi
 with open("incentivi.json", encoding="utf-8") as f:
     INCENTIVI = json.load(f)
 
-# — 3️⃣ Form unico per dati PMI + dati dipendente
+# ─────────────────────────────────────────────────────────────────────────────
+# 3️⃣ Form unico per dati PMI + dati dipendente
 with st.form("dati_completi"):
-    st.header("Dati aziendali (PMI)")
+    st.header("🏢 Dati aziendali (PMI)")
     nome_hr        = st.text_input("Nome imprenditore / responsabile HR")
     nr_dipendenti  = st.number_input("Numero di dipendenti totali", min_value=1, step=1)
-    budget_fiscale = st.number_input("Budget fiscale annuo disponibile (€)", min_value=0, step=1000)
+    budget_fiscale = st.number_input("Budget fiscale annuo (€)", min_value=0, step=1000)
     obiettivo      = st.selectbox(
         "Obiettivo principale",
         ["Massimizzare deducibilità spese", "Ottenere credito d'imposta", "Ridurre contributi"]
     )
 
     st.markdown("---")
-    st.header("Dati per suggerimento operativo")
+    st.header("👤 Dati per suggerimento operativo")
     nome_dip      = st.text_input("Nome dipendente")
     età           = st.number_input("Età", min_value=18, max_value=75, step=1)
-    ruolo_dip     = st.text_input("Ruolo aziendale (es. impiegato, quadro)")
+    ruolo_dip     = st.text_input("Ruolo aziendale")
     figli         = st.number_input("Numero di figli", min_value=0, step=1)
     preferenza    = st.selectbox("Preferenza benefit", ["Tempo libero", "Benefit economici"])
     distanza      = st.number_input("Distanza casa–ufficio (km)", min_value=0.0, step=0.1)
@@ -40,6 +43,7 @@ with st.form("dati_completi"):
 
     submitted = st.form_submit_button("Calcola Consulenza")
 
+# ─────────────────────────────────────────────────────────────────────────────
 if submitted:
     # — Benefit operativi
     dip       = Dipendente(
@@ -57,17 +61,20 @@ if submitted:
     def suggest_incentives(data):
         consigli = []
         for inc in INCENTIVI:
-            max_d = inc.get("max_dipendenti", float("inf"))
-            if data["nr_dipendenti"] > max_d:
+            if data["nr_dipendenti"] > inc.get("max_dipendenti", float("inf")):
                 continue
-            ded_imp = inc["deducibilità_impresa"].lower()
-            tass_dip = inc["tassazione_dipendente"].lower()
-            if data["obiettivo"].lower() not in ded_imp and data["obiettivo"].lower() not in tass_dip:
+            di = inc["deducibilità_impresa"].lower()
+            ti = inc["tassazione_dipendente"].lower()
+            if data["obiettivo"].lower() not in di and data["obiettivo"].lower() not in ti:
                 continue
             consigli.append(inc)
         return consigli
 
-    data_pmi  = {"nr_dipendenti": nr_dipendenti, "budget_fiscale": budget_fiscale, "obiettivo": obiettivo}
+    data_pmi  = {
+        "nr_dipendenti": nr_dipendenti,
+        "budget_fiscale": budget_fiscale,
+        "obiettivo": obiettivo
+    }
     incentives= suggest_incentives(data_pmi)
     st.subheader("📑 Agevolazioni fiscali e contributive")
     for inc in incentives:
@@ -76,11 +83,11 @@ if submitted:
             f"Rif.: {inc['riferimento']}  \n"
             f"{inc['descrizione']}  \n"
             f"- Condizioni: {', '.join(inc['condizioni'])}  \n"
-            f"- Deducibilità impresa: {inc['deducibilità_impresa']}  \n"
-            f"- Tassazione dipendente: {inc['tassazione_dipendente']}"
+            f"- Deducibilità: {inc['deducibilità_impresa']}  \n"
+            f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # — Prompt + chiamata GPT-4 via nuovo client
+    # — Prompt + chiamata GPT-4
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -92,7 +99,6 @@ Elenca per ciascun incentivo:
 Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 """
     with st.spinner("Generazione consulenza avanzata…"):
-        # ← qui usiamo il nuovo metodo .chat.completions.create
         resp = client.chat.completions.create(
             model="gpt-4",
             messages=[
@@ -106,7 +112,7 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
-    # — Salvataggio output completo
+    # — Salvataggio output
     output = {
         "hr": nome_hr,
         **data_pmi,
@@ -118,4 +124,3 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
     with open("output_consulenza_ai.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=4)
     st.success("Consulenza salvata in output_consulenza_ai.json")
-
