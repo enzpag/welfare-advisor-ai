@@ -1,8 +1,8 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-from openai import OpenAI
-from openai.error import RateLimitError
+import openai
+from openai import OpenAI  # client v0.28+
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -41,9 +41,9 @@ with st.form("dati_completi"):
 
     submitted = st.form_submit_button("Calcola Consulenza")
 
-# ─── 4️⃣ Se invio, elaboro tutto ────────────────────────────────────────
+# ─── 4️⃣ Elaborazione e chiamata GPT ───────────────────────────────────
 if submitted:
-    # — Benefit operativi
+    # Operativi
     dip       = Dipendente(
         nome=nome_dip, età=età, ruolo=ruolo_dip,
         figli=figli, preferenza=preferenza,
@@ -55,7 +55,7 @@ if submitted:
     for b in pacchetto:
         st.write(f"- {b}")
 
-    # — Incentivi normativi
+    # Normativi
     def suggest_incentives(data):
         out = []
         for inc in INCENTIVI:
@@ -77,15 +77,15 @@ if submitted:
     st.subheader("📑 Agevolazioni fiscali e contributive")
     for inc in incentives:
         st.markdown(
-            f"**{inc['nome']}**  \n"
-            f"Rif.: {inc['riferimento']}  \n"
-            f"{inc['descrizione']}  \n"
-            f"- Condizioni: {', '.join(inc['condizioni'])}  \n"
-            f"- Deducibilità: {inc['deducibilità_impresa']}  \n"
+            f"**{inc['nome']}**\n"
+            f"Rif.: {inc['riferimento']}\n"
+            f"{inc['descrizione']}\n"
+            f"- Condizioni: {', '.join(inc['condizioni'])}\n"
+            f"- Deducibilità: {inc['deducibilità_impresa']}\n"
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # — Prompt e chiamata con gestione RateLimitError
+    # Prompt e chiamata
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -105,18 +105,18 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
                     {"role": "user",   "content": prompt}
                 ],
                 temperature=0.2,
-                max_tokens=400  # abbassato per evitare rate limit
+                max_tokens=400
             )
             consulenza = resp.choices[0].message.content
 
-        except RateLimitError:
-            st.error("Limite richieste superato, riprova tra 30 secondi 🙂")
+        except Exception as e:
+            st.error("⇥ Errore nella generazione AI, riprova tra qualche secondo.")
             st.stop()
 
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
-    # — Salvataggio output
+    # Salvataggio output
     output = {
         "hr": nome_hr,
         **data_pmi,
@@ -129,5 +129,6 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
         json.dump(output, f, ensure_ascii=False, indent=4)
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
+
 
 
