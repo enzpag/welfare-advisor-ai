@@ -2,7 +2,7 @@ import streamlit as st
 from dataclasses import asdict
 import json
 import time
-from openai import OpenAI
+from openai import OpenAI          # client v0.28+
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -98,20 +98,20 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 """
     resp = None
     with st.spinner("Generazione consulenza avanzata…"):
-        for attempt in range(3):
+        for _ in range(3):          # 3 tentativi
             try:
                 resp = client.chat.completions.create(
                     model="gpt-3.5-turbo",
                     messages=[
                         {"role": "system", "content": "Sei un consulente fiscale professionale."},
-                        {"role": "user", "content": prompt}
+                        {"role": "user",   "content": prompt}
                     ],
                     temperature=0.2,
-                    max_tokens=400
+                    max_tokens=400     # tokens ridotti
                 )
                 break
             except Exception:
-                time.sleep(1)  # aspetta 1s e riprova
+                time.sleep(1)       # attende 1 secondi e riprova
 
         if resp is None:
             st.error("❌ Troppe richieste, riprova fra qualche minuto.")
@@ -135,3 +135,4 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
         json.dump(output, f, ensure_ascii=False, indent=4)
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
+
