@@ -45,9 +45,6 @@ with st.form("dati_completi"):
 
 # ─────────────────────────────────────────────────────────────────────────────
 if submitted:
-    # ─── Debug: mostra i secrets caricati e ferma l’esecuzione ───
-    st.write(">> DEBUG secrets:", st.secrets)
-    st.stop()
 
     # — Benefit operativi
     dip       = Dipendente(
