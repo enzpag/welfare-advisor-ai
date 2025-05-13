@@ -9,7 +9,7 @@ st.set_page_config(page_title="Welfare Advisor AI", layout="centered")
 st.title("🌱 Welfare Advisor AI")
 
 # ─── 1️⃣ Inizializzo il client OpenAI (v0.28+), legge da secrets.toml ───
-client = OpenAI(api_key=st.secrets["openai_api_key"])
+client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 
 # ─── 2️⃣ Carico la Knowledge-Base degli incentivi ───────────────────────
 with open("incentivi.json", encoding="utf-8") as f:
