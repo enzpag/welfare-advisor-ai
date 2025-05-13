@@ -1,8 +1,7 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-import openai
-from openai import OpenAI  # client v0.28+
+from openai import OpenAI         # client v0.28+
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -10,7 +9,7 @@ st.set_page_config(page_title="Welfare Advisor AI", layout="centered")
 st.title("🌱 Welfare Advisor AI")
 
 # ─── 1️⃣ Inizializzo il client OpenAI (v0.28+), legge da secrets.toml ───
-client = OpenAI(api_key=st.secrets["openai"]["api_key"])
+client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # ─── 2️⃣ Carico la Knowledge-Base degli incentivi ───────────────────────
 with open("incentivi.json", encoding="utf-8") as f:
@@ -43,7 +42,7 @@ with st.form("dati_completi"):
 
 # ─── 4️⃣ Elaborazione e chiamata GPT ───────────────────────────────────
 if submitted:
-    # Operativi
+    # — Benefit operativi
     dip       = Dipendente(
         nome=nome_dip, età=età, ruolo=ruolo_dip,
         figli=figli, preferenza=preferenza,
@@ -55,7 +54,7 @@ if submitted:
     for b in pacchetto:
         st.write(f"- {b}")
 
-    # Normativi
+    # — Incentivi normativi
     def suggest_incentives(data):
         out = []
         for inc in INCENTIVI:
@@ -77,15 +76,15 @@ if submitted:
     st.subheader("📑 Agevolazioni fiscali e contributive")
     for inc in incentives:
         st.markdown(
-            f"**{inc['nome']}**\n"
-            f"Rif.: {inc['riferimento']}\n"
-            f"{inc['descrizione']}\n"
-            f"- Condizioni: {', '.join(inc['condizioni'])}\n"
-            f"- Deducibilità: {inc['deducibilità_impresa']}\n"
+            f"**{inc['nome']}**  \n"
+            f"Rif.: {inc['riferimento']}  \n"
+            f"{inc['descrizione']}  \n"
+            f"- Condizioni: {', '.join(inc['condizioni'])}  \n"
+            f"- Deducibilità: {inc['deducibilità_impresa']}  \n"
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # Prompt e chiamata
+    # — Prompt e chiamata con gestione errori
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -108,15 +107,14 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
                 max_tokens=400
             )
             consulenza = resp.choices[0].message.content
-
         except Exception as e:
-            st.error("⇥ Errore nella generazione AI, riprova tra qualche secondo.")
+            st.error(f"❌ Errore nella generazione AI: {type(e).__name__}. Riprova tra qualche secondo.")
             st.stop()
 
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
-    # Salvataggio output
+    # — Salvataggio output
     output = {
         "hr": nome_hr,
         **data_pmi,
@@ -127,6 +125,8 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
     }
     with open("output_consulenza_ai.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=4)
+
+    st.success("Consulenza salvata in output_consulenza_ai.json")
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
 
