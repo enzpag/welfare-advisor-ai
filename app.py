@@ -1,7 +1,9 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-from openai import OpenAI  # client v0.28+
+import time
+from openai import OpenAI
+from openai.error import RateLimitError
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -15,19 +17,27 @@ client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 with open("incentivi.json", encoding="utf-8") as f:
     INCENTIVI = json.load(f)
 
-# ─── Helper: cache della consulenza AI per 1h ────────────────────────────
+# ─── Helper: cache + retry per la consulenza AI ─────────────────────────
 @st.cache_data(ttl=3600)
 def get_consulenza_ai(prompt: str) -> str:
-    resp = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "Sei un consulente fiscale professionale."},
-            {"role": "user",   "content": prompt}
-        ],
-        temperature=0.2,
-        max_tokens=400
-    )
-    return resp.choices[0].message.content
+    delay = 2
+    for attempt in range(5):  # fino a 5 tentativi
+        try:
+            resp = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "Sei un consulente fiscale professionale."},
+                    {"role": "user",   "content": prompt}
+                ],
+                temperature=0.2,
+                max_tokens=250
+            )
+            return resp.choices[0].message.content
+        except RateLimitError:
+            time.sleep(delay)
+            delay *= 2
+    # Se ancora fallisce dopo 5 tentativi, alziamo un’eccezione
+    raise RateLimitError("TROPPE_RATE_LIMIT")
 
 # ─── 3️⃣ Form dati PMI + dati dipendente ───────────────────────────────
 with st.form("dati_completi"):
@@ -54,7 +64,7 @@ with st.form("dati_completi"):
 
     submitted = st.form_submit_button("Calcola Consulenza")
 
-# ─── 4️⃣ Se invio, elaboro e chimata AI ────────────────────────────────
+# ─── 4️⃣ Se invio, elaboro e chiamo AI ────────────────────────────────
 if submitted:
     # Benefit operativi
     dip       = Dipendente(
@@ -98,7 +108,7 @@ if submitted:
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # Costruisco il prompt una sola volta
+    # Costruisco prompt
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -110,10 +120,15 @@ Elenca per ciascun incentivo:
 Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 """
 
-    # Chiamo la funzione cache-data: una sola API call per prompt identico
-    with st.spinner("Generazione consulenza avanzata…"):
-        consulenza = get_consulenza_ai(prompt)
+    # Chiamo la funzione cache/retry
+    try:
+        with st.spinner("Generazione consulenza avanzata…"):
+            consulenza = get_consulenza_ai(prompt)
+    except RateLimitError:
+        st.error("❌ Rate limit ripetuto, riprova più tardi.")
+        st.stop()
 
+    # Mostro consulenza
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
@@ -130,5 +145,4 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
         json.dump(output, f, ensure_ascii=False, indent=4)
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
-
 
