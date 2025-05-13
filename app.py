@@ -1,8 +1,7 @@
 import streamlit as st
 from dataclasses import asdict
 import json
-import time
-from openai import OpenAI          # client v0.28+
+from openai import OpenAI  # client v0.28+
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -15,6 +14,20 @@ client = OpenAI(api_key=st.secrets["openai"]["api_key"])
 # ─── 2️⃣ Carico la Knowledge-Base degli incentivi ───────────────────────
 with open("incentivi.json", encoding="utf-8") as f:
     INCENTIVI = json.load(f)
+
+# ─── Helper: cache della consulenza AI per 1h ────────────────────────────
+@st.cache_data(ttl=3600)
+def get_consulenza_ai(prompt: str) -> str:
+    resp = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Sei un consulente fiscale professionale."},
+            {"role": "user",   "content": prompt}
+        ],
+        temperature=0.2,
+        max_tokens=400
+    )
+    return resp.choices[0].message.content
 
 # ─── 3️⃣ Form dati PMI + dati dipendente ───────────────────────────────
 with st.form("dati_completi"):
@@ -41,9 +54,9 @@ with st.form("dati_completi"):
 
     submitted = st.form_submit_button("Calcola Consulenza")
 
-# ─── 4️⃣ Elaborazione e chiamata GPT ───────────────────────────────────
+# ─── 4️⃣ Se invio, elaboro e chimata AI ────────────────────────────────
 if submitted:
-    # — Benefit operativi
+    # Benefit operativi
     dip       = Dipendente(
         nome=nome_dip, età=età, ruolo=ruolo_dip,
         figli=figli, preferenza=preferenza,
@@ -55,7 +68,7 @@ if submitted:
     for b in pacchetto:
         st.write(f"- {b}")
 
-    # — Incentivi normativi
+    # Incentivi normativi
     def suggest_incentives(data):
         out = []
         for inc in INCENTIVI:
@@ -85,7 +98,7 @@ if submitted:
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # — Prompt e chiamata con retry semplice
+    # Costruisco il prompt una sola volta
     prompt = f"""
 Sei un commercialista esperto di welfare aziendale.
 L’azienda ha {nr_dipendenti} dipendenti e budget fiscale di €{budget_fiscale}.
@@ -96,33 +109,15 @@ Elenca per ciascun incentivo:
 3) Priorità e raccomandazioni.
 Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
 """
-    resp = None
+
+    # Chiamo la funzione cache-data: una sola API call per prompt identico
     with st.spinner("Generazione consulenza avanzata…"):
-        for _ in range(3):          # 3 tentativi
-            try:
-                resp = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
-                    messages=[
-                        {"role": "system", "content": "Sei un consulente fiscale professionale."},
-                        {"role": "user",   "content": prompt}
-                    ],
-                    temperature=0.2,
-                    max_tokens=400     # tokens ridotti
-                )
-                break
-            except Exception:
-                time.sleep(1)       # attende 1 secondi e riprova
-
-        if resp is None:
-            st.error("❌ Troppe richieste, riprova fra qualche minuto.")
-            st.stop()
-
-        consulenza = resp.choices[0].message.content
+        consulenza = get_consulenza_ai(prompt)
 
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
-    # — Salvataggio output
+    # Salvataggio output
     output = {
         "hr": nome_hr,
         **data_pmi,
@@ -135,4 +130,5 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
         json.dump(output, f, ensure_ascii=False, indent=4)
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
+
 
