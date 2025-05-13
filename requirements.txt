@@ -1,2 +1,3 @@
 streamlit
 dataclasses-json
+openai
