@@ -106,3 +106,4 @@ if submitted:
     with open("output_consulenza.json", "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=4)
     st.success("Risultati salvati in output_consulenza.json")
+

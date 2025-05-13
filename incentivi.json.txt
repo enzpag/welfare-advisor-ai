@@ -1,0 +1,51 @@
+[
+  {
+    "nome": "Flexible benefits (art. 51, co.2 lett. f TUIR)",
+    "riferimento": "TUIR art.51 c.2 lett.f",
+    "descrizione": "Esonero IRPEF e contributi per beni e servizi offerti a generalità o categorie di dipendenti",
+    "condizioni": ["platea omogenea o generale", "finalità sociali/educative/ricreative/assistenziali"],
+    "deducibilità_impresa": "Interamente deducibile se in contratto o accordo; 5‰ se unilaterale",
+    "importo_massimo": "Nessun tetto quantitativo",
+    "tassazione_dipendente": "0%"
+  },
+  {
+    "nome": "Fringe benefit esenti 2025",
+    "riferimento": "L. 213/2023 art.1 c.16-17; L.207/2024 art.1 c.385",
+    "descrizione": "Esenzione fino a €1.000 (o €2.000 con figli) per beni/servizi quali utenze, affitto, mutuo prima casa",
+    "condizioni": ["dipendenti con figli: €2.000","senza figli: €1.000"],
+    "deducibilità_impresa": "Costo del personale – integralmente deducibile",
+    "tassazione_dipendente": "0% fino al limite; 100% se superi (tutto o niente)"
+  },
+  {
+    "nome": "Premi di produttività (5% imp. sost.)",
+    "riferimento": "L.208/2015, DL 34/2019 art.4, L.197/2022, L.213/2023, L.207/2024",
+    "descrizione": "Imposta sostitutiva 5% su premi ﬁno a €3.000 (o €4.000 con partecipazione paritetica)",
+    "condizioni": ["reddito ≤ €80.000", "accordo collettivo di 2° livello", "incrementalità misurabile"],
+    "deducibilità_impresa": "Integralmente deducibile come costo del personale",
+    "tassazione_dipendente": "5% (in luogo IRPEF), no concorso al reddito IRPEF"
+  },
+  {
+    "nome": "Smart working – rimborsi forfettari esenti",
+    "riferimento": "L.81/2017 art.4, Interpello AdE 314/2021",
+    "descrizione": "Rimborso spese documentabili per lavoro agile (es. €0,50/giorno) esente da imposte e contributi",
+    "condizioni": ["criteri oggettivi e documentabili", "rimborso analitico"],
+    "deducibilità_impresa": "Integralmente deducibile",
+    "tassazione_dipendente": "0%"
+  },
+  {
+    "nome": "Fondi sanitari integrativi",
+    "riferimento": "TUIR art.51 c.2 lett.a; D.Lgs. 502/1992; D.Lgs.192/2024",
+    "descrizione": "Contributi a fondi sanitari esenti fino a €3.615,20 annui",
+    "condizioni": ["fondo iscritto ad Anagrafe", "mutualità e solidarietà"],
+    "deducibilità_impresa": "Integralmente deducibile",
+    "tassazione_dipendente": "0% fino a €3.615,20"
+  },
+  {
+    "nome": "Previdenza complementare",
+    "riferimento": "D.Lgs. 252/2005 art.8",
+    "descrizione": "Contributi a fondi pensione esenti fino a €5.164,57 annui",
+    "condizioni": ["qualsiasi forma pensionistica complementare"],
+    "deducibilità_impresa": "Integralmente deducibile",
+    "tassazione_dipendente": "0% fino a €5.164,57"
+  }
+]
