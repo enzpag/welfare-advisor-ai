@@ -2,8 +2,7 @@ import streamlit as st
 from dataclasses import asdict
 import json
 import time
-from openai import OpenAI
-from openai.error import RateLimitError
+from openai import OpenAI        # client v0.28+
 from main import Dipendente, suggest_benefits
 
 # ─── Configurazione pagina ─────────────────────────────────────────────
@@ -33,11 +32,11 @@ def get_consulenza_ai(prompt: str) -> str:
                 max_tokens=250
             )
             return resp.choices[0].message.content
-        except RateLimitError:
+        except Exception:
             time.sleep(delay)
             delay *= 2
-    # Se ancora fallisce dopo 5 tentativi, alziamo un’eccezione
-    raise RateLimitError("TROPPE_RATE_LIMIT")
+    # Se falliscono tutti i tentativi:
+    raise RuntimeError("Rate limit o errore API persistente")
 
 # ─── 3️⃣ Form dati PMI + dati dipendente ───────────────────────────────
 with st.form("dati_completi"):
@@ -124,11 +123,11 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
     try:
         with st.spinner("Generazione consulenza avanzata…"):
             consulenza = get_consulenza_ai(prompt)
-    except RateLimitError:
-        st.error("❌ Rate limit ripetuto, riprova più tardi.")
+    except RuntimeError:
+        st.error("❌ Troppe richieste o errore API, riprova più tardi.")
         st.stop()
 
-    # Mostro consulenza
+    # Stampo la consulenza
     st.subheader("💬 Consulenza approfondita (AI)")
     st.write(consulenza)
 
@@ -145,4 +144,3 @@ Incentivi: {json.dumps(incentives, ensure_ascii=False, indent=2)}
         json.dump(output, f, ensure_ascii=False, indent=4)
 
     st.success("Consulenza salvata in output_consulenza_ai.json")
-
