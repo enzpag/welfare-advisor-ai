@@ -1,12 +1,68 @@
-Consulenza fiscale per PMI con {{ nr_dipendenti }} dipendenti e budget €{{ budget_fiscale }}
+Consulenza fiscale e contributiva per PMI con {{ nr_dipendenti }} dipendenti e budget €{{ budget_fiscale }}
 Obiettivo: {{ obiettivo }}
 
-{% for inc in incentivi %}
-### {{ inc.nome }}
-**Riferimento**: {{ inc.riferimento }}
-**Descrizione**: {{ inc.descrizione }}
-**Condizioni**: {% for c in inc.condizioni %}{{ c }}{% if not loop.last %}, {% endif %}{% endfor %}
-**Deducibilità**: {{ inc.deducibilità_impresa }}
-**Tassazione**: {{ inc.tassazione_dipendente }}
+# Disciplina fiscale e contributiva (aggiornata al 2025)
 
-{% endfor %}
+## Flexible benefits (Welfare aziendale)
+**Riferimenti normativi:**  
+La normativa italiana prevede un regime di favore per i flexible benefits (art. 51, comma 2, lett. f) TUIR) che esclude da imposizione i beni/servizi erogati volontariamente dal datore di lavoro a tutti i dipendenti (estendibili ai familiari ai sensi art. 12 TUIR) per finalità educative, ricreative, assistenziali o sanitarie.
+
+**Soglie di esenzione e requisiti:**  
+- Nessun tetto quantitativo se offerti alla generalità dei lavoratori.  
+- Art. 51, comma 2, lett. f-bis: esenti anche i rimborsi per istruzione ed educazione prescolare dei familiari.  
+- Art. 51, comma 2, lett. d-bis: esenti gli abbonamenti ai trasporti pubblici (dipendente + familiari).  
+- Lett. f-ter/f-quater: esenti premi assicurativi per non autosufficienza o gravi patologie.  
+
+**Deducibilità per l’azienda (art. 100 TUIR):**  
+- Spese «volontarie» deducibili fino al 5 ‰ del costo lavoro.  
+- Se previste da contratti/accordi aziendali, interamente deducibili.
+
+**Aggiornamenti 2024–2025:**  
+- Legge Bilancio 2023/2024: aliquota sostitutiva premi di produttività al 5 %.  
+- Circolare 5/E-2024: chiarimenti sul welfare e premi di risultato.  
+- D.Lgs. 192/2024: requisiti più stringenti per i fondi sanitari integrativi (mutualità).
+
+## Fringe benefits  
+**Definizione e normativa (art. 51 co. 3 TUIR):**  
+- Fringe benefit “salvo” esenzione fino a €258,23: se superato, l’intero valore diventa imponibile.
+
+**Soglie 2023–2027:**  
+- 2023: €3 000 esenti per chi ha figli a carico (DL 48/2023).  
+- 2024–2027: €1 000 generalizzato, €2 000 con figli (L. 213/2023, L. 207/2024).  
+- 2025 solo neoassunti trasferiti > 100 km: esenzione fino a €5 000 per canoni di locazione (cond. reddito ≤ €35 000).
+
+**Deduzione per impresa:**  
+- Fringe benefit deducibili integralmente, salvo limiti di uso promiscuo (art. 164 TUIR).
+
+## Premi di produttività (art. 1 L. 208/2015 + DM 25/3/2016)  
+**Condizioni:**  
+- Contratto collettivo II livello  
+- Obiettivi misurabili  
+- Reddito ≤ €80 000  
+- Plafond agevolabile: €3 000 (fino a €4 000 con coinvolgimento paritetico)  
+
+**Aliquota sostitutiva:**  
+- Ordinaria 10 %; ridotta 5 % (prorogata fino al 2027 da L. 207/2024).  
+- Non concorre al reddito complessivo IRPEF.
+
+**Conversione in welfare:**  
+- Se prevista dal contratto, il premio può trasformarsi in beni/servizi esenti da tasse e contributi (Circolare 49/2023 INPS).
+
+## Lavoro agile (L. 81/2017)  
+- Stesse regole di tassazione/contribuzione del lavoro ordinario.  
+- **Esenzioni possibili** per rimborsi spese:  
+  - Strumenti di lavoro (pc, connessioni) se uso principale aziendale (art. 51 lett. d).  
+  - Rimborsi documentati e analitici (es. €0,50/giorno) possono essere esclusi da IRPEF e contributi (Interpello 314/2021).  
+
+## Contributi esenti per fondi sanitari e previdenza  
+- **Fondi sanitari integrativi:** esenti fino a €3 615,20 annui (art. 51 lett. a), deducibili per l’azienda.  
+- **Previdenza complementare:** deducibili/esenti fino a €5 164,57 annui (D.Lgs. 252/2005).  
+
+**Aggiornamenti 2024–2025:**  
+- D.Lgs. 192/2024: requisiti di mutualità per i fondi sanitari.  
+- Incentivi under-35 per contributi aggiuntivi (L. 197/2022).
+
+---
+
+**Fonti normative e di prassi:**  
+DPR 917/1986 (TUIR), DLgs 252/2005, L.208/2015, L.232/2016, DL 48/2023, L.197/2022, L.213/2023, L.207/2024, DLgs 192/2024; Circolari AdE 5/E-2018, 23/E-2023, 5/E-2024; Circolare INPS 49/2023; Interpelli AdE 314/2021, 59/2024.
