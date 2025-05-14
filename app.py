@@ -9,7 +9,6 @@ st.set_page_config(page_title="Welfare Advisor AI", layout="centered")
 st.title("🌱 Welfare Advisor AI")
 
 # ─── 1️⃣ Inizializzo Jinja2 ────────────────────────────────────────────
-#    Assicurati di avere dentro la cartella `templates/` un file `parere.txt`
 env = Environment(
     loader=FileSystemLoader("templates"),
     trim_blocks=True,
@@ -48,7 +47,7 @@ with st.form("dati_completi"):
 
 # ─── 4️⃣ Elaborazione ─────────────────────────────────────────────────
 if submitted:
-    # — a) Benefit operativi
+    # a) Benefit operativi
     dip       = Dipendente(
         nome=nome_dip, età=età, ruolo=ruolo_dip,
         figli=figli, preferenza=preferenza,
@@ -60,7 +59,7 @@ if submitted:
     for b in pacchetto:
         st.write(f"- {b}")
 
-    # — b) Incentivi normativi
+    # b) Incentivi normativi
     def suggest_incentives(data):
         out = []
         for inc in INCENTIVI:
@@ -90,7 +89,7 @@ if submitted:
             f"- Tassazione: {inc['tassazione_dipendente']}"
         )
 
-    # — c) Generazione report con Jinja2
+    # c) Generazione report con Jinja2
     report = template.render(
         nome_hr=nome_hr,
         nr_dipendenti=nr_dipendenti,
@@ -102,13 +101,12 @@ if submitted:
     st.subheader("📄 Report normativo dettagliato")
     st.text(report)
 
-    # — d) Salvataggio report su file
+    # d) Salvataggio report su file e download
     path = "report_welfare.txt"
     with open(path, "w", encoding="utf-8") as outf:
         outf.write(report)
     st.success(f"Report salvato come `{path}`")
 
-    # — ➡️ aggiungo il pulsante di download
     with open(path, "rb") as f:
         data = f.read()
     st.download_button(
