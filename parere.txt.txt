@@ -1,0 +1,12 @@
+Consulenza fiscale per PMI con {{ nr_dipendenti }} dipendenti e budget €{{ budget_fiscale }}
+Obiettivo: {{ obiettivo }}
+
+{% for inc in incentivi %}
+### {{ inc.nome }}
+**Riferimento**: {{ inc.riferimento }}
+**Descrizione**: {{ inc.descrizione }}
+**Condizioni**: {% for c in inc.condizioni %}{{ c }}{% if not loop.last %}, {% endif %}{% endfor %}
+**Deducibilità**: {{ inc.deducibilità_impresa }}
+**Tassazione**: {{ inc.tassazione_dipendente }}
+
+{% endfor %}
