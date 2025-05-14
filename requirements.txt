@@ -1,4 +1,4 @@
 streamlit
 dataclasses-json
-openai>=0.28.0
+jinja2
 
